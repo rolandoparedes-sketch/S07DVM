@@ -290,9 +290,8 @@ public class ThirdPersonController : MonoBehaviour
             ray.positionCount = 2;
             ray.SetPosition(0, WeaponShootAnchor.position);
             ray.SetPosition(1, hit.point);
-            Instantiate(turrentPrefab, hit.point, SpawnPoint.rotation);
-            Debug.Log("TORRETA");
-
+            
+           
 
         }
         GameObject flash = Instantiate(MuzzleFlash, FirePoint.position, FirePoint.rotation);
