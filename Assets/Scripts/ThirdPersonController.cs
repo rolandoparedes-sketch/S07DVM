@@ -2,6 +2,7 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Sirenix.OdinInspector;
+using System;
 
 public class ThirdPersonController : MonoBehaviour
 {
@@ -14,7 +15,7 @@ public class ThirdPersonController : MonoBehaviour
     [FoldoutGroup("References")]
     public CinemachineCamera characterAimCamera;
     [FoldoutGroup("References")]
-  //  public Animator animator;
+    public LineRenderer RayPrefab;
 
 
     [FoldoutGroup("Controller")]
@@ -54,6 +55,9 @@ public class ThirdPersonController : MonoBehaviour
 
     public bool aimMode = false;
 
+    [FoldoutGroup("Attack")]
+     public Transform WeaponShootAnchor;
+
     Vector3 normalDebug;
     Vector3 impactPoint;
     Vector3 crossResult;
@@ -90,9 +94,12 @@ public class ThirdPersonController : MonoBehaviour
             characterAimCamera.Priority = 0;
             aimMode = false;
         };
-
+        inputs.Player.Attack.performed += OnAttack;
         // inputs.Player.Sprint.performed += OnDash;
     }
+
+   
+
     void Start()
     {
 
@@ -103,7 +110,7 @@ public class ThirdPersonController : MonoBehaviour
         OnMove();
         //OnSimpleMove();
     }
-
+    #region Movement
     public void OnMove()
     {
 
@@ -258,6 +265,23 @@ public class ThirdPersonController : MonoBehaviour
             }
         }
     }
+    private void OnAttack(InputAction.CallbackContext context)
+    {
+        Debug.Log("Attack");
+        Physics.Raycast(WeaponShootAnchor.position, characterAimCamera.transform.forward, out RaycastHit hit, 100);
+
+        if (hit.collider != null)
+        {
+            LineRenderer ray = Instantiate(RayPrefab, transform.position, Quaternion.identity);
+            ray.gameObject.transform.position = WeaponShootAnchor.position;
+
+            ray.positionCount = 2;
+            ray.SetPosition(0, WeaponShootAnchor.position);
+            ray.SetPosition(1, hit.point);
+            
+        }
+    }
+
     public float GetSpeed()
     {
         return Mathf.Abs(controller.velocity.magnitude);
@@ -279,3 +303,4 @@ public class ThirdPersonController : MonoBehaviour
 
     }
 }
+    #endregion
