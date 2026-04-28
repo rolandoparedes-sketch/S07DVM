@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Sirenix.OdinInspector;
 using System;
+using UnityEngine.Events;
 
 public class ThirdPersonController : MonoBehaviour
 {
@@ -62,6 +63,12 @@ public class ThirdPersonController : MonoBehaviour
     Vector3 impactPoint;
     Vector3 crossResult;
 
+    public UnityEvent OnWalk;
+    public UnityEvent OnShotGun;
+    public GameObject MuzzleFlash;
+    public Transform FirePoint;
+    public GameObject turrentPrefab;
+    public Transform SpawnPoint;
     private void Awake()
     {
         inputs = new();
@@ -80,7 +87,7 @@ public class ThirdPersonController : MonoBehaviour
         inputs.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         inputs.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
-
+        inputs.Player.Spawn.performed += OnSpawn;
         inputs.Player.Jump.performed += OnJump;
         inputs.Player.Aim.started += ctx =>
             {
@@ -98,7 +105,11 @@ public class ThirdPersonController : MonoBehaviour
         // inputs.Player.Sprint.performed += OnDash;
     }
 
-   
+    private void OnSpawn(InputAction.CallbackContext context)
+    {
+        Instantiate(turrentPrefab, SpawnPoint.position, SpawnPoint.rotation);
+        Debug.Log("TORRETA");
+    }
 
     void Start()
     {
@@ -269,17 +280,22 @@ public class ThirdPersonController : MonoBehaviour
     {
         Debug.Log("Attack");
         Physics.Raycast(WeaponShootAnchor.position, characterAimCamera.transform.forward, out RaycastHit hit, 100);
-
+        
         if (hit.collider != null)
         {
+           
             LineRenderer ray = Instantiate(RayPrefab, transform.position, Quaternion.identity);
             ray.gameObject.transform.position = WeaponShootAnchor.position;
 
             ray.positionCount = 2;
             ray.SetPosition(0, WeaponShootAnchor.position);
             ray.SetPosition(1, hit.point);
-            
+            Instantiate(turrentPrefab, hit.point, SpawnPoint.rotation);
+            Debug.Log("TORRETA");
+
+
         }
+        GameObject flash = Instantiate(MuzzleFlash, FirePoint.position, FirePoint.rotation);
     }
 
     public float GetSpeed()
