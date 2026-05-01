@@ -62,15 +62,15 @@ public class ThirdPersonController : MonoBehaviour
     Vector3 normalDebug;
     Vector3 impactPoint;
     Vector3 crossResult;
-
+    public ParticleSystem walkParticles;
     public UnityEvent OnWalk;
-    public UnityEvent OnShotGun;
     public GameObject MuzzleFlash;
     public Transform FirePoint;
     public GameObject turrentPrefab;
     public Transform SpawnPoint;
     private void Awake()
     {
+        
         inputs = new();
         controller = GetComponent<CharacterController>();
 
@@ -131,7 +131,7 @@ public class ThirdPersonController : MonoBehaviour
         cameraForwardDir.Normalize();
 
 
-        if(!aimMode)
+        if (!aimMode)
         {
             if (moveInput != Vector2.zero)
             {
@@ -159,7 +159,7 @@ public class ThirdPersonController : MonoBehaviour
                 targetQuaternion,
                 rotationSpeed * Time.deltaTime);
         }
-       
+
         //>?
         Vector3 moveDir;
         if (!enableWallRun)
@@ -171,10 +171,23 @@ public class ThirdPersonController : MonoBehaviour
             moveDir = (crossResult * moveInput.y) * moveSpeed;
 
 
-            
+
         }
 
         float magnitud = Mathf.Abs(controller.velocity.magnitude);
+
+        if (controller.velocity.magnitude > 0.1f && controller.isGrounded)
+        {
+            if (!walkParticles.isPlaying)
+                walkParticles.Play();
+        }
+        else
+        {
+            if (walkParticles.isPlaying)
+                walkParticles.Stop();
+        
+ 
+    }
         // print(magnitud);
         //animator.SetFloat("Speed", GetSpeed());
 
@@ -285,16 +298,21 @@ public class ThirdPersonController : MonoBehaviour
         {
            
             LineRenderer ray = Instantiate(RayPrefab, transform.position, Quaternion.identity);
+            Destroy(ray, 0.1f);
+           
             ray.gameObject.transform.position = WeaponShootAnchor.position;
 
             ray.positionCount = 2;
             ray.SetPosition(0, WeaponShootAnchor.position);
             ray.SetPosition(1, hit.point);
-            
-           
+
+            Destroy(ray.gameObject, 0.1f);
 
         }
         GameObject flash = Instantiate(MuzzleFlash, FirePoint.position, FirePoint.rotation);
+        Destroy(flash, 0.1f);
+
+        
     }
 
     public float GetSpeed()
