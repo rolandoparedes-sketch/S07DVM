@@ -41,8 +41,5 @@ public class Turret : MonoBehaviour
         Quaternion rotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * rotationSpeed);
     }
-    void OnCollisionEnter(Collision collision)
-    {
-
-    }
+   
 }

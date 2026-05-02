@@ -310,7 +310,7 @@ public class ThirdPersonController : MonoBehaviour
 
         }
         GameObject flash = Instantiate(MuzzleFlash, FirePoint.position, FirePoint.rotation);
-        Destroy(flash, 0.1f);
+        
 
         
     }
