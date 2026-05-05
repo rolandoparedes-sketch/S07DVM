@@ -73,7 +73,7 @@ public class ThirdPersonController : MonoBehaviour
     public Transform SpawnPoint;
     public LayerMask enemyMask;
     public GameObject ImpactEffect;
-
+   
 
     private void Awake()
     {
@@ -325,11 +325,20 @@ public class ThirdPersonController : MonoBehaviour
         {
             Debug.Log("Miss");
         }
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Enemy"))
+            {
+                Destroy(hit.collider.gameObject);
+            }
+        }
+
     }
 
 
     private void ThrowSmt(InputAction.CallbackContext context)
     {
+        
         GameObject granade = Instantiate(GranadePrefab, transform.position, Quaternion.identity);
         Vector3 dir = characterCamera.transform.forward;
 

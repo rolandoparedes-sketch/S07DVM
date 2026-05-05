@@ -7,6 +7,7 @@ public class Granade : MonoBehaviour
     public float radius;
     public LayerMask mask;
     public UnityEvent OnExplotion;
+    public GameObject explosionEffect;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -20,12 +21,18 @@ public class Granade : MonoBehaviour
     }
     public void OnExplode()
     {
+        
         Collider[] colls = Physics.OverlapSphere(transform.position, radius, mask);
 
-        foreach (var cool in colls)
+        foreach (var coll in colls)
         {
-            Debug.Log(" Mueran todos");
+            if (coll.CompareTag("Enemy"))
+            {
+                Destroy(coll.gameObject);
+            }
         }
+        GameObject fx = Instantiate(explosionEffect, transform.position, Quaternion.identity);
+        Destroy(fx, 1f);
         OnExplotion?.Invoke();
 
         Destroy(gameObject);

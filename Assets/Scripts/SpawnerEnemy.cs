@@ -1,27 +1,44 @@
+using System.Collections.Generic;
 using UnityEngine;
+
 public class EnemySpawner : MonoBehaviour
 {
     public GameObject enemigoPrefab;
-    public int maxEnemigos = 5;
-    public float tiempoEntreSpawn = 3f;
 
+
+    public Transform[] spawnPoints;
+    public float tiempoEntreSpawn = 3f;
     private float contador = 0f;
-    private int enemigosCreados = 0;
+
+    public int maxEnemigos = 5;
+
+    private List<GameObject> enemigosActivos = new List<GameObject>();
 
     void Update()
     {
-        if (enemigosCreados >= maxEnemigos) return;
+       
+        enemigosActivos.RemoveAll(e => e == null);
 
         contador += Time.deltaTime;
 
-        if (contador >= tiempoEntreSpawn)
+        if (contador >= tiempoEntreSpawn && enemigosActivos.Count < maxEnemigos)
         {
-            Instantiate(enemigoPrefab, transform.position, Quaternion.identity);
-
-            enemigosCreados++;
+            Spawn();
             contador = 0f;
+        }
+    }
 
-            Debug.Log("Spawn: " + enemigosCreados);
+    void Spawn()
+    {
+        if (spawnPoints.Length == 0) return;
+
+        
+        foreach (Transform punto in spawnPoints)
+        {
+            if (enemigosActivos.Count >= maxEnemigos) break;
+
+            GameObject enemigo = Instantiate(enemigoPrefab, punto.position, punto.rotation);
+            enemigosActivos.Add(enemigo);
         }
     }
 }
