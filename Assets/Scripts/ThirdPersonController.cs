@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using Sirenix.OdinInspector;
 using System;
 using UnityEngine.Events;
+using UnityEngine.ProBuilder.MeshOperations;
 
 public class ThirdPersonController : MonoBehaviour
 {
@@ -17,7 +18,9 @@ public class ThirdPersonController : MonoBehaviour
     public CinemachineCamera characterAimCamera;
     [FoldoutGroup("References")]
     public LineRenderer RayPrefab;
-
+    [FoldoutGroup("References")]
+    public GameObject GranadePrefab;
+    [SerializeField] private float throwForce;
 
     [FoldoutGroup("Controller")]
     public float moveSpeed = 5f;
@@ -57,7 +60,7 @@ public class ThirdPersonController : MonoBehaviour
     public bool aimMode = false;
 
     [FoldoutGroup("Attack")]
-     public Transform WeaponShootAnchor;
+    public Transform WeaponShootAnchor;
 
     Vector3 normalDebug;
     Vector3 impactPoint;
@@ -68,9 +71,13 @@ public class ThirdPersonController : MonoBehaviour
     public Transform FirePoint;
     public GameObject turrentPrefab;
     public Transform SpawnPoint;
+    public LayerMask enemyMask;
+    public GameObject ImpactEffect;
+
+
     private void Awake()
     {
-        
+
         inputs = new();
         controller = GetComponent<CharacterController>();
 
@@ -89,6 +96,7 @@ public class ThirdPersonController : MonoBehaviour
 
         inputs.Player.Spawn.performed += OnSpawn;
         inputs.Player.Jump.performed += OnJump;
+        inputs.Player.ThrowGranade.performed += ThrowSmt;
         inputs.Player.Aim.started += ctx =>
             {
                 characterCamera.Priority = 0;
@@ -185,9 +193,9 @@ public class ThirdPersonController : MonoBehaviour
         {
             if (walkParticles.isPlaying)
                 walkParticles.Stop();
-        
- 
-    }
+
+
+        }
         // print(magnitud);
         //animator.SetFloat("Speed", GetSpeed());
 
@@ -203,7 +211,7 @@ public class ThirdPersonController : MonoBehaviour
 
         moveDir.y = verticalVelocity;
 
-       // animator.SetBool("Grounded", controller.isGrounded);
+        // animator.SetBool("Grounded", controller.isGrounded);
 
 
         if (IsDashing)
@@ -223,7 +231,7 @@ public class ThirdPersonController : MonoBehaviour
     {
         if (!controller.isGrounded) return;
 
-       // animator.SetTrigger("Jump");
+        // animator.SetTrigger("Jump");
         source.GenerateImpulse();
         verticalVelocity = jumpForce;
     }
@@ -258,13 +266,13 @@ public class ThirdPersonController : MonoBehaviour
 
         Physics.Raycast(transform.position, -transform.right, out RaycastHit hitLeft, rayLenght);
 
-   
+
         if (hitRight.collider != null && hitRight.collider.gameObject.tag == "Wall")
         {
             hit = hitRight;
             characterCamera.Lens.Dutch = cameraTitlt;
         }
-        else if(hitLeft.collider != null && hitLeft.collider.gameObject.tag == "Wall")
+        else if (hitLeft.collider != null && hitLeft.collider.gameObject.tag == "Wall")
         {
             hit = hitLeft;
             characterCamera.Lens.Dutch = -cameraTitlt;
@@ -275,7 +283,7 @@ public class ThirdPersonController : MonoBehaviour
             enableWallRun = false;
         }
 
-        if(hit.collider != null)
+        if (hit.collider != null)
         {
             enableWallRun = true;
 
@@ -291,15 +299,18 @@ public class ThirdPersonController : MonoBehaviour
     }
     private void OnAttack(InputAction.CallbackContext context)
     {
-        Debug.Log("Attack");
-        Physics.Raycast(WeaponShootAnchor.position, characterAimCamera.transform.forward, out RaycastHit hit, 100);
-        
-        if (hit.collider != null)
+        //Debug.Log("Attack");
+        if (Physics.SphereCast(WeaponShootAnchor.position, 5f, characterAimCamera.transform.forward, out RaycastHit hit, 100, enemyMask))
+        // if (Physics.Raycast(WeaponShootAnchor.position, characterAimCamera.transform.forward, out RaycastHit hit, 100, enemyMask));
         {
-           
+            Debug.Log("Hit Smt");
+
+            GameObject turret = Instantiate(turrentPrefab, hit.point, Quaternion.identity);
+            turret.transform.up = hit.normal;
+
             LineRenderer ray = Instantiate(RayPrefab, transform.position, Quaternion.identity);
             Destroy(ray, 0.1f);
-           
+
             ray.gameObject.transform.position = WeaponShootAnchor.position;
 
             ray.positionCount = 2;
@@ -307,13 +318,32 @@ public class ThirdPersonController : MonoBehaviour
             ray.SetPosition(1, hit.point);
 
             Destroy(ray.gameObject, 0.1f);
-
+            GameObject flash = Instantiate(MuzzleFlash, FirePoint.position, FirePoint.rotation);
+            GameObject ImpactPoint = Instantiate(ImpactEffect, hit.point, Quaternion.identity);
         }
-        GameObject flash = Instantiate(MuzzleFlash, FirePoint.position, FirePoint.rotation);
+        else
+        {
+            Debug.Log("Miss");
+        }
+    }
+
+
+    private void ThrowSmt(InputAction.CallbackContext context)
+    {
+        GameObject granade = Instantiate(GranadePrefab, transform.position, Quaternion.identity);
+        Vector3 dir = characterCamera.transform.forward;
+
+        granade.GetComponent<Rigidbody>().AddForce(dir * throwForce, ForceMode.Impulse);
+            
+    }
+
+
+      
+        
         
 
         
-    }
+    
 
     public float GetSpeed()
     {

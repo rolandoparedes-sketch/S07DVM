@@ -1,4 +1,5 @@
 using System.IO;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -47,4 +48,22 @@ public class Enemy : MonoBehaviour
                   
         }
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        
+       if(other.CompareTag("Player"))
+        {
+            CinemachineImpulseSource impulse = other.GetComponent<CinemachineImpulseSource>();
+            
+
+            if (impulse != null)
+            {
+                impulse.GenerateImpulse();
+            }
+            Destroy(gameObject);
+        }
+    }
+
+
 }
